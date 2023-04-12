@@ -48,7 +48,7 @@ function init() {
     scene.add(light);
 
     /* load model */
-    loader.load('public/models/gltf/Flamingo.glb', function (gltf) {
+    loader.load('Flamingo.glb', function (gltf) {
         const flamingo = gltf.scene;
 
         flamingo.scale.set(0.008, 0.008, 0.008);
