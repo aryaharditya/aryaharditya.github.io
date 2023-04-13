@@ -48,18 +48,17 @@ function init() {
     scene.add(light);
 
     /* load model */
-    loader.load('Flamingo.glb', function (gltf) {
+    loader.load('flowers.gltf', function (gltf) {
         const flamingo = gltf.scene;
 
         flamingo.scale.set(0.008, 0.008, 0.008);
         flamingo.rotation.y = 2.5;
         flamingo.rotation.x = 0.3;
 
-
         scene.add(flamingo);
 
-        mixer = new THREE.AnimationMixer(flamingo);
-        mixer.clipAction(gltf.animations[0]).play();
+//         mixer = new THREE.AnimationMixer(flamingo);
+//         mixer.clipAction(gltf.animations[0]).play();
 
     });
 
