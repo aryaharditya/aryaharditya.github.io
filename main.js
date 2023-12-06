@@ -51,14 +51,18 @@ function init() {
     loader.load('Flamingo.glb', function (gltf) {
         const flamingo = gltf.scene;
 
-        flamingo.scale.set(0.008, 0.008, 0.008);
-        flamingo.rotation.y = 2.5;
-        flamingo.rotation.x = 0.3;
+        for(let i = 0; i < 5; i++) {
+        flamingo.scale.set(0.005, 0.005, 0.005);
+        flamingo.rotation.y = Math.random() * 2 * Math.PI;
+        flamingo.position.x = Math.random() * i * 100;
 
         scene.add(flamingo);
 
         mixer = new THREE.AnimationMixer(flamingo);
-        mixer.clipAction(gltf.animations[0]).play();
+        mixer.clipAction(gltf.animations[i]).play();
+        }
+        
+
 
     });
 
