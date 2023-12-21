@@ -36,23 +36,21 @@ function init() {
 
 		loader.load( 'Flamingo.glb', function ( gltf ) {
 
-		const mesh = gltf.scene.children[ 0 ];
+			const mesh = gltf.scene.children[ 0 ];
 
-		const s = 0.35;
-		mesh.scale.set( s, s, s );
-		mesh.position.y = 15;
-		mesh.rotation.y = - 1;
+			const s = 0.005;
+			mesh.scale.set( s, s, s );
+        		mesh.rotation.y = Math.random() * 2 * Math.PI;
+       			mesh.position.x = Math.random() * 100;
 
-		mesh.castShadow = true;
-		mesh.receiveShadow = true;
+			mesh.castShadow = true;
+			mesh.receiveShadow = true;
 
-		scene.add( mesh );
+			scene.add( mesh );
 
-		const mixer = new THREE.AnimationMixer( mesh );
-		mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
-		mixers.push( mixer );
-
-	} );
+			const mixer = new THREE.AnimationMixer( mesh );
+			mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
+		} );
 
 	function onSelect() {
 
