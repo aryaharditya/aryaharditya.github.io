@@ -4,82 +4,104 @@ import { OrbitControls } from 'OrbitControl';
 import { ARButton } from 'ARButton';
 
 /* Declaration */
-
-import * as THREE from 'three';
-import { ARButton } from 'three/addons/webxr/ARButton.js';
+let container;
 let camera, scene, renderer;
-let controller;
+let controller1, controller2;
+let raycaster;
+let mixer;
+let clock;
+const intersected = [];
+const tempMatrix = new THREE.Matrix4();
+
+init();
+animate();
 
 function init() {
+    /* Initialize */
+    container = document.createElement('div');
+    document.body.appendChild(container);
 
-		const container = document.createElement( 'div' );
-		document.body.appendChild( container );
+    scene = new THREE.Scene();
 
-		scene = new THREE.Scene();
+    clock = new THREE.Clock();
+    const loader = new GLTFLoader();
 
-		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+    const sizes = {
+        width: window.innerWidth,
+        height: window.innerHeight
+    }
 
-		const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
-		light.position.set( 0.5, 1, 0.25 );
-		scene.add( light );
+    /* camera control */
+    camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
+    camera.position.set(0, 0, -2);
+    scene.add(camera);
 
-		renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
-		renderer.setPixelRatio( window.devicePixelRatio );
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		renderer.xr.enabled = true;
-		container.appendChild( renderer.domElement );
+    const controls = new OrbitControls(camera, container);
+    controls.minDistance = 0;
+    controls.maxDistance = 8;
+
+    /* light */
+    scene.add(new THREE.HemisphereLight(0x808080, 0x606060));
+
+    const light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(0, 6, 0);
+    scene.add(light);
+
+    /* load model */
+    loader.load('Flamingo.glb', function (gltf) {
+        const flamingo = gltf.scene;
+
+        flamingo.scale.set(0.008, 0.008, 0.008);
+        flamingo.rotation.y = 2.5;
+        flamingo.rotation.x = 0.3;
 
 
-		document.body.appendChild( ARButton.createButton( renderer ) );
+        scene.add(flamingo);
 
-		const loader = new GLTFLoader();
+        mixer = new THREE.AnimationMixer(flamingo);
+        mixer.clipAction(gltf.animations[0]).play();
 
-		loader.load( 'Flamingo.glb', function ( gltf ) {
+    });
 
-			const mesh = gltf.scene.children[ 0 ];
+    /* render objects */
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.xr.enabled = true;
+    container.appendChild(renderer.domElement);
 
-			const s = 0.005;
-			mesh.scale.set( s, s, s );
-        		mesh.rotation.y = Math.random() * 2 * Math.PI;
-       			mesh.position.x = Math.random() * 100;
+    document.body.appendChild(ARButton.createButton(renderer));
 
-			mesh.castShadow = true;
-			mesh.receiveShadow = true;
+    window.addEventListener('resize', onWindowResize);
 
-			scene.add( mesh );
-
-			const mixer = new THREE.AnimationMixer( mesh );
-			mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
-		} );
-
-	function onSelect() {
-
-		mesh.position.set( 0, 0, - 0.3 ).applyMatrix4( controller.matrixWorld );
-		mesh.quaternion.setFromRotationMatrix( controller.matrixWorld );
-		scene.add( mesh );
-	}
-
-	controller = renderer.xr.getController( 0 );
-	controller.addEventListener( 'select', onSelect );
-	scene.add( controller );
-
-	window.addEventListener( 'resize', onWindowResize );
 }
 
 function onWindowResize() {
 
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize(sizes.width, sizes.height);
+
 }
 
-			//
-
+/* draw objects */
 function animate() {
-	renderer.setAnimationLoop( render );
+
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    mixer.update(delta);
+    renderer.setAnimationLoop(render);
+
 }
 
 function render() {
-	renderer.render( scene, camera );
+
+    renderer.render(scene, camera);
+
 }
+
