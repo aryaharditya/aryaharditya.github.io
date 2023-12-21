@@ -1,110 +1,97 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'GLTFLoader';
-import { OrbitControls } from 'OrbitControl';
-import { ARButton } from 'ARButton';
+import { ARButton } from 'three/addons/webxr/ARButton.js';
 
-/* Declaration */
-let container;
 let camera, scene, renderer;
-let controller1, controller2;
-let raycaster;
-let mixer;
-let clock;
-const intersected = [];
-const tempMatrix = new THREE.Matrix4();
+let controller;
 
 init();
 animate();
 
 function init() {
-    /* Initialize */
-    container = document.createElement('div');
-    document.body.appendChild(container);
 
-    scene = new THREE.Scene();
+		const container = document.createElement( 'div' );
+		document.body.appendChild( container );
 
-    clock = new THREE.Clock();
-    const loader = new GLTFLoader();
+		scene = new THREE.Scene();
 
-    const sizes = {
-        width: window.innerWidth,
-        height: window.innerHeight
-    }
+		camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
 
-    /* camera control */
-    camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
-    camera.position.set(0, 0, -2);
-    scene.add(camera);
+				const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 3 );
+				light.position.set( 0.5, 1, 0.25 );
+				scene.add( light );
 
-    const controls = new OrbitControls(camera, container);
-    controls.minDistance = 0;
-    controls.maxDistance = 8;
+				//
 
-    /* light */
-    scene.add(new THREE.HemisphereLight(0x808080, 0x606060));
+				renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.xr.enabled = true;
+				container.appendChild( renderer.domElement );
 
-    const light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(0, 6, 0);
-    scene.add(light);
+				//
 
-    /* load model */
-    loader.load('Flamingo.glb', function (gltf) {
-        const flamingo = gltf.scene;
+				document.body.appendChild( ARButton.createButton( renderer ) );
 
-        for(let i = 0; i < 5; i++) {
-        flamingo.scale.set(0.005, 0.005, 0.005);
-        flamingo.rotation.y = Math.random() * 2 * Math.PI;
-        flamingo.position.x = Math.random() * i * 100;
+				//
+				const loader = new GLTFLoader();
 
-        scene.add(flamingo);
+				loader.load( 'models/gltf/Flamingo.glb', function ( gltf ) {
 
-        mixer = new THREE.AnimationMixer(flamingo);
-        mixer.clipAction(gltf.animations[i]).play();
-        }
-        
+				const mesh = gltf.scene.children[ 0 ];
 
+					const s = 0.35;
+					mesh.scale.set( s, s, s );
+					mesh.position.y = 15;
+					mesh.rotation.y = - 1;
 
-    });
+					mesh.castShadow = true;
+					mesh.receiveShadow = true;
 
-    /* render objects */
-    renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true
-    });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(sizes.width, sizes.height);
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.xr.enabled = true;
-    container.appendChild(renderer.domElement);
+					scene.add( mesh );
 
-    document.body.appendChild(ARButton.createButton(renderer));
+					const mixer = new THREE.AnimationMixer( mesh );
+					mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
+					mixers.push( mixer );
 
-    window.addEventListener('resize', onWindowResize);
+				} );
 
-}
+				function onSelect() {
 
-function onWindowResize() {
+					mesh.position.set( 0, 0, - 0.3 ).applyMatrix4( controller.matrixWorld );
+					mesh.quaternion.setFromRotationMatrix( controller.matrixWorld );
+					scene.add( mesh );
 
-    camera.aspect = sizes.width / sizes.height;
-    camera.updateProjectionMatrix();
+				}
 
-    renderer.setSize(sizes.width, sizes.height);
+				controller = renderer.xr.getController( 0 );
+				controller.addEventListener( 'select', onSelect );
+				scene.add( controller );
 
-}
+				//
 
-/* draw objects */
-function animate() {
+				window.addEventListener( 'resize', onWindowResize );
 
-    requestAnimationFrame(animate);
-    const delta = clock.getDelta();
-    mixer.update(delta);
-    renderer.setAnimationLoop(render);
+			}
 
-}
+			function onWindowResize() {
 
-function render() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
 
-    renderer.render(scene, camera);
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
-}
+			}
 
+			//
+
+			function animate() {
+
+				renderer.setAnimationLoop( render );
+
+			}
+
+			function render() {
+
+				renderer.render( scene, camera );
+
+			}
