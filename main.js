@@ -6,7 +6,7 @@ import { ARButton } from 'ARButton';
 /* Declaration */
 let container;
 let camera, scene, renderer;
-let controller;
+let controller1, controller2;
 let raycaster;
 let mixer;
 let clock;
