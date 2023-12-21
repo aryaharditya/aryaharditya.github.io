@@ -35,7 +35,7 @@ function init() {
 				//
 				const loader = new GLTFLoader();
 
-				loader.load( 'models/gltf/Flamingo.glb', function ( gltf ) {
+				loader.load( 'Flamingo.glb', function ( gltf ) {
 
 				const mesh = gltf.scene.children[ 0 ];
 
