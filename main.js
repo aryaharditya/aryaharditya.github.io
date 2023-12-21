@@ -1,11 +1,14 @@
 import * as THREE from 'three';
-import { ARButton } from 'three/addons/webxr/ARButton.js';
+import { GLTFLoader } from 'GLTFLoader';
+import { OrbitControls } from 'OrbitControl';
+import { ARButton } from 'ARButton';
 
+/* Declaration */
+
+import * as THREE from 'three';
+import { ARButton } from 'three/addons/webxr/ARButton.js';
 let camera, scene, renderer;
 let controller;
-
-init();
-animate();
 
 function init() {
 
