@@ -6,7 +6,7 @@ import { ARButton } from 'ARButton';
 /* Declaration */
 let container;
 let camera, scene, renderer;
-let controller1, controller2;
+let controller;
 let raycaster;
 let mixer;
 let clock;
@@ -62,6 +62,20 @@ function init() {
         mixer.clipAction(gltf.animations[0]).play();
 
     });
+
+    function onSelect() {
+
+	    const material = new THREE.MeshPhongMaterial( { color: 0xffffff * Math.random() } );
+	    const mesh = new THREE.Mesh( geometry, material );
+	    mesh.position.set( 0, 0, - 0.3 ).applyMatrix4( controller.matrixWorld );
+	    mesh.quaternion.setFromRotationMatrix( controller.matrixWorld );
+	    scene.add( mesh );
+
+	}
+
+	controller = renderer.xr.getController( 0 );
+	controller.addEventListener( 'select', onSelect );
+	scene.add( controller );
 
     /* render objects */
     renderer = new THREE.WebGLRenderer({
